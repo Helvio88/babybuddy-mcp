@@ -7,7 +7,7 @@ Baby Buddy's TimeFieldFilter (api/filters.py) defines:
     date_max = IsoDateTimeFilter(..., lookup_expr="lte")
 
 A bare calendar day such as ``?date=2026-09-05`` therefore matches only midnight,
-not every record on that day. Assistants commonly pass YYYY-MM-DD and get empty
+not every record on that day. Clients commonly pass YYYY-MM-DD and get empty
 lists. This module expands those values to a full local-day datetime range.
 """
 

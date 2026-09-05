@@ -45,7 +45,9 @@ async def test_list_notes_with_tags_and_date(mock_api: respx.MockRouter) -> None
     )
     await list_notes(date="2024-01-15", tags=["milestone", "smile"])
     params = route.calls[0].request.url.params
-    assert params["date"] == "2024-01-15"
+    assert "date" not in params
+    assert params["date_min"] == "2024-01-15T00:00:00"
+    assert params["date_max"] == "2024-01-15T23:59:59.999999"
     assert params["tags"] == "milestone,smile"
 
 

@@ -58,7 +58,8 @@ async def test_list_temperature_range_and_tags(mock_api: respx.MockRouter) -> No
     )
     await list_temperature(date_min="2024-01-01", date_max="2024-02-01", tags=["fever"])
     params = route.calls[0].request.url.params
-    assert params["date_min"] == "2024-01-01"
+    assert params["date_min"] == "2024-01-01T00:00:00"
+    assert params["date_max"] == "2024-02-01T23:59:59.999999"
     assert params["tags"] == "fever"
 
 

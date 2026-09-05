@@ -37,6 +37,21 @@ async def test_list_medications(mock_api: respx.MockRouter) -> None:
     assert result[0]["name"] == "Tylenol"
 
 
+async def test_list_medications_calendar_day_expands_to_range(
+    mock_api: respx.MockRouter,
+) -> None:
+    route = mock_api.get("/api/medication/").mock(
+        return_value=httpx.Response(
+            200, json={"count": 0, "next": None, "previous": None, "results": []}
+        )
+    )
+    await list_medications(date="2024-01-15")
+    params = route.calls[0].request.url.params
+    assert "date" not in params
+    assert params["date_min"] == "2024-01-15T00:00:00"
+    assert params["date_max"] == "2024-01-15T23:59:59.999999"
+
+
 async def test_list_medications_with_filters(mock_api: respx.MockRouter) -> None:
     route = mock_api.get("/api/medication/").mock(
         return_value=httpx.Response(

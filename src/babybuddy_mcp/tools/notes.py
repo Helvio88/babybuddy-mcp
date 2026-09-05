@@ -12,6 +12,7 @@ from ..client import (
     api_post,
     api_post_multipart,
 )
+from ..date_filters import DATE_ARG, DATE_MAX_ARG, DATE_MIN_ARG, apply_date_filters
 
 mcp = FastMCP("notes")
 
@@ -27,9 +28,9 @@ def _read_image(image_path: str) -> dict[str, tuple[str, bytes]]:
 @mcp.tool
 async def list_notes(
     child_id: Annotated[int | None, "Filter by child ID. Use list_children to get IDs."] = None,
-    date: Annotated[str | None, "Filter by exact date, YYYY-MM-DD"] = None,
-    date_min: Annotated[str | None, "Start of date range, YYYY-MM-DD"] = None,
-    date_max: Annotated[str | None, "End of date range, YYYY-MM-DD"] = None,
+    date: Annotated[str | None, DATE_ARG] = None,
+    date_min: Annotated[str | None, DATE_MIN_ARG] = None,
+    date_max: Annotated[str | None, DATE_MAX_ARG] = None,
     tags: Annotated[list[str] | None, "Filter by tag names (notes having all listed tags)"] = None,
     ordering: Annotated[str | None, "Order by field, e.g. 'time' or '-time' (descending)"] = None,
     limit: Annotated[int, "Maximum number of records to return"] = 50,
@@ -38,12 +39,7 @@ async def list_notes(
     params: QueryParams = {"limit": limit}
     if child_id is not None:
         params["child"] = child_id
-    if date is not None:
-        params["date"] = date
-    if date_min is not None:
-        params["date_min"] = date_min
-    if date_max is not None:
-        params["date_max"] = date_max
+    apply_date_filters(params, date=date, date_min=date_min, date_max=date_max)
     if tags:
         params["tags"] = ",".join(tags)
     if ordering is not None:

@@ -30,6 +30,36 @@ async def test_list_diaper_changes(mock_api: respx.MockRouter) -> None:
     assert result[0]["wet"] is True
 
 
+async def test_list_diaper_changes_calendar_day_expands_to_range(
+    mock_api: respx.MockRouter,
+) -> None:
+    route = mock_api.get("/api/changes/").mock(
+        return_value=httpx.Response(
+            200, json={"count": 0, "next": None, "previous": None, "results": []}
+        )
+    )
+    await list_diaper_changes(date="2024-01-15")
+    params = dict(route.calls[0].request.url.params)
+    assert "date" not in params
+    assert params["date_min"] == "2024-01-15T00:00:00"
+    assert params["date_max"] == "2024-01-15T23:59:59.999999"
+
+
+async def test_list_diaper_changes_iso_datetime_keeps_exact_date(
+    mock_api: respx.MockRouter,
+) -> None:
+    route = mock_api.get("/api/changes/").mock(
+        return_value=httpx.Response(
+            200, json={"count": 0, "next": None, "previous": None, "results": []}
+        )
+    )
+    await list_diaper_changes(date="2024-01-15T10:00:00")
+    params = dict(route.calls[0].request.url.params)
+    assert params["date"] == "2024-01-15T10:00:00"
+    assert "date_min" not in params
+    assert "date_max" not in params
+
+
 async def test_list_with_filters(mock_api: respx.MockRouter) -> None:
     route = mock_api.get("/api/changes/").mock(
         return_value=httpx.Response(

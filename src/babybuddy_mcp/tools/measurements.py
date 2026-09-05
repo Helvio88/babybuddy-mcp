@@ -3,6 +3,7 @@ from typing import Annotated
 from fastmcp import FastMCP
 
 from ..client import QueryParams, api_delete, api_list, api_patch, api_post
+from ..date_filters import DATE_ARG, DATE_MAX_ARG, DATE_MIN_ARG, apply_date_filters
 
 mcp = FastMCP("measurements")
 
@@ -259,9 +260,9 @@ async def delete_head_circumference(
 @mcp.tool
 async def list_temperature(
     child_id: Annotated[int | None, "Filter by child ID. Use list_children to get IDs."] = None,
-    date: Annotated[str | None, "Filter by exact date, YYYY-MM-DD"] = None,
-    date_min: Annotated[str | None, "Start of date range, YYYY-MM-DD"] = None,
-    date_max: Annotated[str | None, "End of date range, YYYY-MM-DD"] = None,
+    date: Annotated[str | None, DATE_ARG] = None,
+    date_min: Annotated[str | None, DATE_MIN_ARG] = None,
+    date_max: Annotated[str | None, DATE_MAX_ARG] = None,
     tags: Annotated[list[str] | None, "Filter by tag names (records having all listed tags)"] = None,
     ordering: Annotated[str | None, "Order by field, e.g. 'time' or '-time' (descending)"] = None,
     limit: Annotated[int, "Maximum number of records to return"] = 50,
@@ -270,12 +271,7 @@ async def list_temperature(
     params: QueryParams = {"limit": limit}
     if child_id is not None:
         params["child"] = child_id
-    if date is not None:
-        params["date"] = date
-    if date_min is not None:
-        params["date_min"] = date_min
-    if date_max is not None:
-        params["date_max"] = date_max
+    apply_date_filters(params, date=date, date_min=date_min, date_max=date_max)
     if tags:
         params["tags"] = ",".join(tags)
     if ordering is not None:
